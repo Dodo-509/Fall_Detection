@@ -1,0 +1,257 @@
+[
+    {
+        "id": "866d5d6e1c17e532",
+        "type": "tab",
+        "label": "SmartHealth",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "babfd0cc6e4b59bc",
+        "type": "mqtt in",
+        "z": "866d5d6e1c17e532",
+        "name": "Fall Alert",
+        "topic": "smarthealth/falls",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "sh_broker",
+        "nl": false,
+        "rap": false,
+        "inputs": 0,
+        "x": 100,
+        "y": 140,
+        "wires": [
+            [
+                "9be66fc0401f8938",
+                "fbb443fb896b47b0",
+                "d851fa5626ef21c1",
+                "ecfbb5b21726a72a",
+                "8efd941d78fe835f",
+                "9282f00ddebd9959"
+            ]
+        ]
+    },
+    {
+        "id": "9be66fc0401f8938",
+        "type": "debug",
+        "z": "866d5d6e1c17e532",
+        "name": "RAW",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 330,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "fc3eedba62837d03",
+        "type": "ui_text",
+        "z": "866d5d6e1c17e532",
+        "group": "sh_group",
+        "width": "",
+        "height": "",
+        "name": "Status",
+        "label": "Patient Status : ",
+        "format": "{{msg.payload}}",
+        "layout": "row-left",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": "",
+        "color": "#000000",
+        "x": 530,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "760a2459572005fe",
+        "type": "ui_audio",
+        "z": "866d5d6e1c17e532",
+        "name": "",
+        "group": "sh_group",
+        "voice": "Microsoft Hortense - French (France)",
+        "always": true,
+        "x": 580,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "d851fa5626ef21c1",
+        "type": "function",
+        "z": "866d5d6e1c17e532",
+        "name": "préparer audio",
+        "func": "if (msg.payload.status === 'fall_detected') {\n    msg.payload = \"Attention ! Une chute a été détectée !\";\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 240,
+        "wires": [
+            [
+                "760a2459572005fe"
+            ]
+        ]
+    },
+    {
+        "id": "fbb443fb896b47b0",
+        "type": "ui_template",
+        "z": "866d5d6e1c17e532",
+        "group": "sh_group",
+        "name": "Vidéos",
+        "order": 2,
+        "width": "12",
+        "height": "6",
+        "format": "<div style=\"text-align: center; padding: 10px; background-color: #1e1e1e; border-radius: 8px; color: white;\">\n\n    <div style=\"margin-bottom: 15px; padding: 8px; border-radius: 4px;\"\n        ng-style=\"msg.payload.status === 'fall_detected' ? {'background-color': '#8b0000'} : {'background-color': '#006400'}\">\n        <span ng-if=\"msg.payload.status === 'fall_detected'\">⚠️ ALERTE : CHUTE DETECTÉE</span>\n        <span ng-if=\"msg.payload.status === 'Stable'\">🟢 SYSTÈME EN VEILLE - PATIENT STABLE</span>\n    </div>\n\n    <div ng-init=\"$root.derniereVideoId = ''; $root.horodatageVideo = ''\">\n        <div ng-if=\"msg.payload.video_file\">\n            {{$root.derniereVideoId = msg.payload.video_file; ''}}\n            {{$root.horodatageVideo = msg.payload.timestamp; ''}}\n        </div>\n    </div>\n\n    <div ng-if=\"$root.derniereVideoId\">\n        <h4 style=\"color: #ffaa00; margin-top: 10px;\">🎥 DERNIER INCIDENT ENREGISTRÉ (LEVÉE DE DOUTE)</h4>\n\n        <video width=\"100%\" height=\"auto\" controls autoplay ng-src=\"../{{$root.derniereVideoId}}\"\n            style=\"border: 2px solid #ffaa00; border-radius: 4px;\">\n            Votre navigateur ne supporte pas ce format vidéo.\n        </video>\n\n        <p style=\"font-size: 0.85em; color: #aaa; margin-top: 5px;\">\n            Fichier : {{$root.derniereVideoId}} <br>\n            Détecté le : {{$root.horodatageVideo}}\n        </p>\n    </div>\n\n    <div ng-if=\"!$root.derniereVideoId\">\n        <p style=\"color: #888; font-style: italic;\">Aucun historique vidéo pour le moment.</p>\n    </div>\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 270,
+        "y": 60,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ecfbb5b21726a72a",
+        "type": "function",
+        "z": "866d5d6e1c17e532",
+        "name": "préparer pour email",
+        "func": "if (msg.payload.status === 'fall_detected') {\n    msg.to = 'asmaa17atouailaa@gmail.com';\n    msg.topic = 'ALERTE URGENCE : Chute détectée !';\n    msg.payload = \"Le système SmartHealth a détecté une chute. Fichier vidéo pour levée de doute : \" + msg.payload.video_file;\n    return msg;\n}\nreturn null; ",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 180,
+        "wires": [
+            [
+                "7fcc80db2d4c6c7e"
+            ]
+        ]
+    },
+    {
+        "id": "7fcc80db2d4c6c7e",
+        "type": "e-mail",
+        "z": "866d5d6e1c17e532",
+        "server": "smtp.gmail.com",
+        "port": "465",
+        "authtype": "BASIC",
+        "saslformat": true,
+        "token": "oauth2Response.access_token",
+        "secure": true,
+        "tls": true,
+        "name": "asmaa17atouailaa@gmail.com",
+        "dname": "",
+        "x": 630,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "8efd941d78fe835f",
+        "type": "function",
+        "z": "866d5d6e1c17e532",
+        "name": "récupérer le status",
+        "func": "if(msg.payload.status === \"fall_detected\"){\n    msg.payload = \"Chute détectée\"\n} else {\n    msg.payload = \"Stable\"\n}\n    \nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 120,
+        "wires": [
+            [
+                "fc3eedba62837d03"
+            ]
+        ]
+    },
+    {
+        "id": "dfa5d45c27973a97",
+        "type": "firebase modify",
+        "z": "866d5d6e1c17e532",
+        "name": "save fall allert",
+        "firebaseconfig": "",
+        "childpath": "msg.childpath",
+        "method": "set",
+        "value": "msg.payload",
+        "priority": "",
+        "x": 520,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "9282f00ddebd9959",
+        "type": "function",
+        "z": "866d5d6e1c17e532",
+        "name": "function 1",
+        "func": "if (msg.payload.status === \"fall_detected\") {\n    msg.childpath = \"falls/\" + Date.now();\n    msg.payload = {\n        status: \"fall_detected\",\n        video_file: msg.payload.video_file || \"\",\n        timestamp: new Date().toISOString()\n    };\n    return msg;\n}\nreturn null;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 320,
+        "wires": [
+            [
+                "dfa5d45c27973a97"
+            ]
+        ]
+    },
+    {
+        "id": "sh_broker",
+        "type": "mqtt-broker",
+        "name": "Mosquitto Local",
+        "broker": "127.0.0.1",
+        "port": "1883",
+        "clientid": "nodered_sh",
+        "autoConnect": true,
+        "usetls": false,
+        "compatmode": false,
+        "protocolVersion": 4,
+        "keepalive": "60",
+        "cleansession": true
+    },
+    {
+        "id": "sh_group",
+        "type": "ui_group",
+        "name": "SmartHealth",
+        "tab": "sh_ui_tab",
+        "order": 1,
+        "disp": true,
+        "width": "12"
+    },
+    {
+        "id": "sh_ui_tab",
+        "type": "ui_tab",
+        "name": "SmartHealth",
+        "icon": "dashboard",
+        "order": 1
+    },
+    {
+        "id": "b59bf9f7b2b0b7ce",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6",
+            "node-red-node-email": "5.2.3",
+            "node-red-contrib-firebase": "1.1.1"
+        }
+    }
+]
